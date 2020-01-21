@@ -15,6 +15,17 @@ library(data.table)
 ```
 
 ```{r}
+
+final_tuesday = final %>% 
+  janitor::clean_names() %>% 
+  mutate_at(vars(starts_with("est")), as.numeric) %>% 
+  pivot_longer(cols = starts_with("est"), names_to = "gender", values_to = "number", values_drop_na = FALSE)
+
+
+
+```
+
+```{r}
 final = read_excel("./data/median-earnings-2016-final.xlsx", sheet =1, range = "A5:Q563") %>% 
   janitor::clean_names() %>% 
   select(-starts_with("moe")) 
@@ -34,7 +45,9 @@ plot = total_num %>%
   ggplot(aes(x = names, y = Total, fill = Total)) +
   geom_bar(stat ="identity", position = "dodge")
 
-
+final_selected = final2 %>% 
+  select(names, Total, Management..Business..Science..and.Arts.Occupations ) %>% 
+  ggplot(aes(x = ))
 
 ```
 
