@@ -1,0 +1,12 @@
+name: "Yay internet!"
+output_dir: "."
+navbar:
+  title: "Home"
+  left:
+    - text: "Analysis"
+      href: index.html
+    - text: "Interactive Graphics"
+      href: 
+    - text: "Screencast"
+      href: 
+    

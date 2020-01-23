@@ -12,6 +12,7 @@ knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 library(readxl)
 library(data.table)
+library(patchwork)
 ```
 
 ```{r}
@@ -21,14 +22,35 @@ final_tuesday = final %>%
   mutate_at(vars(starts_with("est")), as.numeric) %>% 
   pivot_longer(cols = starts_with("est"), names_to = "gender", values_to = "number", values_drop_na = FALSE)
 
-
-
 ```
 
 ```{r}
 final = read_excel("./data/median-earnings-2016-final.xlsx", sheet =1, range = "A5:Q563") %>% 
   janitor::clean_names() %>% 
   select(-starts_with("moe")) 
+
+final_num = final %>% 
+  select(-ends_with("med")) %>% 
+  pivot_longer(cols = starts_with("est"), names_to = "gender", values_to = "number", values_drop_na = FALSE) %>% 
+  filter(occupational_category %in% c("Management, Business, Science, and Arts Occupations", "Service Occupations", "Sales and Office Occupations", "Natural Resources, Construction, and Maintenance Occupations", "Production, Transportation, and Material Moving Occupations")) %>% 
+  filter(gender %in% c("est_men_num", "est_women_num")) %>% 
+  
+
+
+
+final_med = final %>% 
+  select(-ends_with("num")) %>% 
+  mutate_at(vars(starts_with("est")), as.numeric) %>% 
+  pivot_longer(cols = starts_with("est"), names_to = "gender", values_to = "number", values_drop_na = FALSE) %>% 
+  filter(occupational_category %in% c("Management, Business, Science, and Arts Occupations", "Service Occupations", "Sales and Office Occupations", "Natural Resources, Construction, and Maintenance Occupations", "Production, Transportation, and Material Moving Occupations")) %>% 
+  filter(gender %in% c("est_men_med", "est_women_med")) %>% 
+  group_by(occupational_category) %>% 
+  ggplot(aes(x = gender, y = number, fill = occupational_category)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  scale_fill_grey() +
+  theme(axis.text.x = element_text(size=10))
+  
+final_med + final_num
 
 final2 = final_1
 colnames(final2) <- final2[1,]
