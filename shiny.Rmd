@@ -19,7 +19,6 @@ library(readxl)
 ```
 
 ```{r}
-```{r}
 final = read_excel("./data/median-earnings-2016-final.xlsx", sheet =1, range = "A5:Q563") %>% 
   janitor::clean_names() %>% 
   select(-starts_with("moe")) 
@@ -28,7 +27,8 @@ final_num = final %>%
   select(-ends_with("med")) %>% 
   pivot_longer(cols = starts_with("est"), names_to = "gender", values_to = "number", values_drop_na = FALSE) %>% 
   filter(occupational_category %in% c("Management, Business, Science, and Arts Occupations", "Service Occupations", "Sales and Office Occupations", "Natural Resources, Construction, and Maintenance Occupations", "Production, Transportation, and Material Moving Occupations")) %>% 
-  filter(gender %in% c("est_men_num", "est_women_num")) 
+  filter(gender %in% c("est_men_num", "est_women_num")) %>% 
+  mutate(gender = recode(gender, "est_men_num" = "Men", "est_women_num" = "Women"))
 
 
 
@@ -37,61 +37,60 @@ final_med = final %>%
   mutate_at(vars(starts_with("est")), as.numeric) %>% 
   pivot_longer(cols = starts_with("est"), names_to = "gender", values_to = "number", values_drop_na = FALSE) %>% 
   filter(occupational_category %in% c("Management, Business, Science, and Arts Occupations", "Service Occupations", "Sales and Office Occupations", "Natural Resources, Construction, and Maintenance Occupations", "Production, Transportation, and Material Moving Occupations")) %>% 
-  filter(gender %in% c("est_men_med", "est_women_med")) 
+  filter(gender %in% c("est_men_med", "est_women_med")) %>% 
+  mutate(gender = recode(gender, "est_men_med" = "Men", "est_women_med" = "Women"))
+
 
 ```
 
-Column {.sidebar}
+Column {data-width=200}
 --------------------------------------------------------------------------------------
 ```{r}
 
-#salary = final_num %>% pull(gender) %>% unique()
-#checkboxGroupInput("gender_choice", label = h5("Select Count"), choices = salary, selected = salary)
+salary = final_num %>% pull(gender) %>% unique()
+checkboxGroupInput("gender_choice", label = h5("Select Count"), choices = salary, selected = salary)
 
-salary = final_num %>% pull(occupational_category) %>% unique()
-checkboxGroupInput("gender_choice", label = h5("Select Category"), choices = salary, selected = salary)
+#salary = final_num %>% pull(occupational_category) %>% unique()
+#checkboxGroupInput("gender_choice", label = h5("Select Category"), choices = salary, selected = salary)
 
-#median = final_med %>% pull(gender) %>% unique()
-#checkboxGroupInput("gender_median", label = h5("Select Median"), choices = median, selected = median)
+median = final_med %>% pull(gender) %>% unique()
+checkboxGroupInput("gender_median", label = h5("Select Median"), choices = median, selected = median)
 
-salary = final_med %>% pull(occupational_category) %>% unique()
-checkboxGroupInput("gender_median", label = h5("Select Categroy"), choices = salary, selected = salary)
+#salary = final_med %>% pull(occupational_category) %>% unique()
+#checkboxGroupInput("gender_median", label = h5("Select Categroy"), choices = salary, selected = salary)
 ```
 
-Column {data-width=650}
+Column 
 ---------------------------------------------------------------------------
 
-## R Markdown
+### Male and Female Employees in each Industry
 
 ```{r}
 renderPlotly({
   final_num %>% 
   filter(gender == input$gender_choice) %>% 
-  group_by(occupational_category) %>% 
-  ggplot(aes(x = gender, y = number, fill = occupational_category)) +
+  ggplot(aes(x = occupational_category, y = number, fill = gender)) +
   geom_bar(stat = "identity", position = "dodge") +
+  scale_y_continuous(breaks = seq(2000000, 100000000, 3000000)) +
   scale_fill_grey() +
-  theme(axis.text.x = element_text(size=10)) +
-  scale_x_discrete(labels = c("Men", "Women"))
+  theme(axis.text.x = element_text(size=10), legend.position = "none") +
+  scale_x_discrete(labels = c("Management", "Natural", "Production", " Sales", "Service"))
 })
 ```
 
 
-Column {data-width=350}
----------------------------------------------------------------------------
-
-## Including Plots
+### Median Income of Males vs Females in each Industry
 
 ```{r}
 renderPlotly({
   final_med %>% 
   filter(gender == input$gender_median) %>% 
-  group_by(occupational_category) %>% 
-  ggplot(aes(x = gender, y = number, fill = occupational_category)) +
+  ggplot(aes(x = occupational_category, y = number, fill = gender)) +
   geom_bar(stat = "identity", position = "dodge") +
+  scale_y_continuous(breaks = seq(20000, 80000, 10000)) +
   scale_fill_grey() +
   theme(axis.text.x = element_text(size=10)) +
-  scale_x_discrete(labels = c("Men", "Women")) 
+  scale_x_discrete(labels = c("Management", "Natural", "Production", " Sales", "Service")) 
 })
 
 ```

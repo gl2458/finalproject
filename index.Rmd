@@ -1,5 +1,5 @@
 ---
-title: "salary trends by gender"
+title: "Salary trends by gender"
 output: 
   html_document:
     toc: true
